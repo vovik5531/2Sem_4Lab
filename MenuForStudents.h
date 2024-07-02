@@ -28,7 +28,7 @@ public:
     private:
     void printMenuForStudents() const
     {
-        std::cout << "\n             МЕНЮ      \n";
+        std::cout << "\n-------------------МЕНЮ--------------------\n";
         std::cout << "1. Добавить студента\n";
         std::cout << "2. Удалить студента\n";
         std::cout << "3. Проверить наличие студента\n";

@@ -30,16 +30,16 @@ public:
     private:
     void printMenuForStudents() const
     {
-        std::cout << "\n               МЕНЮ      \n";
+        std::cout << "\n-----------------------ГЛАВНОЕ МЕНЮ-----------------------\n";
         std::cout << " 1. Добавить число в первое дерево\n";
         std::cout << " 2. Удалить число из первого дерева\n";
         std::cout << " 3. Проверить наличие числа в первом дереве\n";
-        std::cout << " 4. Вывести массив чисел первого дерева\n";
+        std::cout << " 4. Вывести первое дерево\n";
         std::cout << " 5. Ввод нескольких чисел для первого дерева\n";
         std::cout << " 6. Добавить число во второе дерево\n";
         std::cout << " 7. Удалить число из второго дерева\n";
         std::cout << " 8. Проверить наличие числа во втором дереве\n";
-        std::cout << " 9. Вывести массив чисел второго дерева\n";
+        std::cout << " 9. Вывести второе дерево\n";
         std::cout << "10. Ввод нескольких чисел для второго дерева\n";
         std::cout << "11. Объединить первое со вторым деревом\n";
         std::cout << "12. Объединить второе с первым деревом\n";
@@ -48,6 +48,8 @@ public:
         std::cout << "15. Сравнить первое со вторым деревом\n";
         std::cout << "16. Проверить, является ли первое поддеревом второго\n";
         std::cout << "17. Проверить, является ли второе поддеревом первого\n";
+        std::cout << "18. Обход первого дерева\n";
+        std::cout << "19. Обход второго дерева\n";
         std::cout << "0. Выход\n";
     }
     void processChoice(int choice)
@@ -105,6 +107,12 @@ public:
         case 17: 
             check2IsSubNumberTree1(); 
             break; 
+        case 18:
+            TreeWalk(tree1);
+            break;
+        case 19:
+            TreeWalk(tree2);
+            break;
         default:
             break;
         }
@@ -166,7 +174,7 @@ public:
     void printNumbers1()
     {
         std::cout << "Дерево чисел №1:\n";
-        tree1.print();
+        std::cout << tree1; 
     }
     void printNumbers2()
     {
@@ -215,13 +223,8 @@ public:
     {
         if(tree1.isSubTree(tree2))
         {
-            std::cout << "Второе удалено из первого!\n";
-            T arr[tree2.getSize()];
-            tree2.saveAsArr(arr);
-            for(uint64_t i = 0; i< tree1.getSize(); ++i)
-            {
-                tree1.remove(arr[i]);
-            }
+            tree1 = tree1-tree2;
+            std::cout << "Второе удалено из первого!\n";   
         }
         else
         {
@@ -232,14 +235,8 @@ public:
     {
         if(tree2.isSubTree(tree1))
         {
+            tree2 = tree2-tree1;
             std::cout << "Первое удалено из второго!\n";
-            T* arr = new T[tree1.getSize()];
-            tree1.saveAsArr(arr);
-            for(uint64_t i = 0; i< tree1.getSize(); ++i)
-            {
-                tree2.remove(arr[i]);
-            }
-            delete[] arr;   
         }
         else
         {
@@ -318,6 +315,81 @@ public:
                 return value;
             }
         }
+    }
+    void TreeWalk(const BinTree<T>& tree )
+    {
+        std::cout << "Выберете тип обхода: \n";
+        std::cout << " 1.КЛП\n";
+        std::cout << " 2.КПЛ\n";
+        std::cout << " 3.ЛПК\n";
+        std::cout << " 4.ЛКП\n";
+        std::cout << " 5.ПЛК\n";
+        std::cout << " 6.ПКЛ\n";
+        std::cout << " 0.Выход\n";
+        int choice = safeInputInteger("Введите число: ");
+        int size = tree.getSize();
+        T* arr = new T[size];
+        if(choice==1)
+        {
+            tree.saveAsArr(arr, 1);
+            std::cout<<"[ ";
+            for (int i=0; i<size; ++i)
+            {
+                std::cout << arr[i]<< " "; 
+            }
+            std::cout<< "] - КЛП\n";
+        }
+        if(choice==2)
+        {
+            tree.saveAsArr(arr, 2);
+            std::cout<<"[ ";
+            for (int i=0; i<size; ++i)
+            {
+                std::cout << arr[i]<< " "; 
+            }
+            std::cout<< "] - КПЛ\n";
+        }
+        if(choice==3)
+        {
+            tree.saveAsArr(arr, 3);
+            std::cout<<"[ ";
+            for (int i=0; i<size; ++i)
+            {
+                std::cout << arr[i]<< " "; 
+            }
+            std::cout<< "] - ЛПК\n";
+        }
+        if(choice==4)
+        {
+            tree.saveAsArr(arr, 4);
+            std::cout<<"[ ";
+            for (int i=0; i<size; ++i)
+            {
+                std::cout << arr[i]<< " "; 
+            }
+            std::cout<< "] - ЛКП\n";
+        }
+        if(choice==5)
+        {
+            tree.saveAsArr(arr, 5);
+            std::cout<<"[ ";
+            for (int i=0; i<size; ++i)
+            {
+                std::cout << arr[i]<< " "; 
+            }
+            std::cout<< "] - ПЛК\n";
+        }
+        if(choice==6)
+        {
+            tree.saveAsArr(arr, 6);
+            std::cout<<"[ ";
+            for (int i=0; i<size; ++i)
+            {
+                std::cout << arr[i]<< " "; 
+            }
+            std::cout<< "] - ПКЛ\n";
+        }
+        delete[]arr;
     }
 };
 

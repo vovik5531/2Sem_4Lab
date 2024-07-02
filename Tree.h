@@ -3,6 +3,7 @@
 #include<algorithm>
 #include<iostream>
 #include<malloc.h>
+
 template <class T>
 class BinTree
 {
@@ -17,6 +18,7 @@ class BinTree
     };
 private:
     Node* root;
+    int(*comparator) (const T& first, const T& second);
     void clear(Node* root) //рекурсивная функция глубокой очистки памяти
     {
         if(root)
@@ -33,7 +35,8 @@ private:
         {
             return nullptr; 
         }
-        Node* new_node = new Node(copy_tree_Node->node_data); 
+        T data = copy_tree_Node->node_data;
+        Node* new_node = new Node(data); 
         new_node->left_node = copyTree(copy_tree_Node->left_node);
         new_node->right_node = copyTree(copy_tree_Node->right_node);
         return new_node;
@@ -47,7 +50,7 @@ public:
     explicit BinTree(Node* new_tree_root) : root(new_tree_root){}
     BinTree(const BinTree<T>& tree)
     {
-        root = tree.root; 
+        root = copyTree(tree.root); 
     }
     BinTree<T>& operator = (const BinTree<T>& other_assigment)
     {
@@ -56,7 +59,7 @@ public:
         {
             clear(root); 
             root = copyTree(other_assigment.root); 
-            return *(this);
+            return *this;
         }
     }
     bool operator ==(const BinTree<T>& other_to_compare) const //TODO : make saveAsArr method 
@@ -85,26 +88,30 @@ public:
         this->addTreePrivate(result.root, tree_to_add.root); 
         return result; 
     }
-    BinTree<T> operator - (const BinTree<T>& tree_to_substarct) const
+    BinTree<T> operator -(const BinTree<T>& tree_to_substarct)
     {
-        BinTree<T> result = *(this); 
-
-        uint64_t tree_to_substarct_size = tree_to_substarct.getSize();
-
-        T* tree_to_substarct_arr = new T[tree_to_substarct_size];
-        tree_to_substarct.saveAsArr(tree_to_substarct_arr);
-        for(uint64_t i = 0; i< tree_to_substarct_size; ++i)
+        BinTree<T> result = *(this);
+        BinTree<T> copy = tree_to_substarct;
+        uint64_t copy_size = this->getSize();
+        T* copy_arr = new T[copy_size];
+        copy.saveAsArr(copy_arr);
+        for(uint64_t i = 0; i< copy_size; ++i)
         {
-            if(result.contains(tree_to_substarct_arr[i]))
+            if(result.contains(copy_arr[i]))
             {
-                result.remove(tree_to_substarct_arr[i]);
+                result.remove(copy_arr[i]);
             }
         }
-        delete[] tree_to_substarct_arr;
-
+        
+        
         return result; 
     }
-    void print() const
+    friend std::ostream& operator <<(std::ostream& out_stream, const BinTree<T>& tree )
+    {
+        tree.printTree(tree.root);
+        return out_stream;
+    }
+    void print() const//FOO
     {
         printTree(root); 
         std::cout<<std::endl;
@@ -113,9 +120,9 @@ public:
     {
         printTreeView("", root, 0); 
     }
-    void saveAsArr(T* arr) const
+    void saveAsArr(T* arr, int type_of_traversal=4) const
     {
-        saveAsArrPrivate(root, arr, 0);
+        saveAsArrPrivate(root, arr, 0, type_of_traversal);
         //std::cout<<"Kuku!" << std::endl;
     }
     void readFromString(const std::string input_s)
@@ -155,7 +162,7 @@ public:
 
     T& findMin() const
     {
-        if(!root) return findMinPrivate(root)->node_data;
+        if(root) return findMinPrivate(root)->node_data;
         else
         {
             throw std::runtime_error("empty_node");
@@ -183,24 +190,24 @@ public:
     {
         root = removePrivate(root, value);
     }
-    // BinTree<T> extractSubtree(const T& value) 
-    // {
-    //     Node* new_root = FindNodePrivate(root, value);
-    //     if (new_root == nullptr) throw std::runtime_error("NO_VALUE_ERROR\n");
-    //     BinTree<T> sub;
-    //     sub.root = new_root;
-    //     removeSubtreePrivate(root, new_root);
-    //     return sub;
-    // }
+    BinTree<T> extractSubtree(const T& value) 
+    {
+        Node* new_root = FindNodePrivate(root, value);
+        if (new_root == nullptr) throw std::runtime_error("NO_VALUE_ERROR\n");
+        BinTree<T> sub, result;
+        sub = this->extractCopySubtree(value);
+        result = *this- sub;
+        return result;
+    }
 
-    // BinTree<T> extractCopySubtree(const T& value) const 
-    // {
-    //     Node* new_root = FindNodePrivate(root, value);
-    //     if (new_root == nullptr) throw std::runtime_error("NO_VALUE_ERROR\n");
-    //     BinTree<T> sub;
-    //     sub.root = copyTree(new_root);
-    //     return sub;
-    // }
+    BinTree<T> extractCopySubtree(const T& value) const 
+    {
+        Node* new_root = FindNodePrivate(root, value);
+        if (new_root == nullptr) throw std::runtime_error("NO_VALUE_ERROR\n");
+        BinTree<T> sub;
+        sub.root = copyTree(new_root);
+        return sub;
+    }
     template <typename F>
     BinTree<T> map(F function) const
     {
@@ -208,7 +215,10 @@ public:
         MapRecursive(root, result, function);
         return result; 
     }
-
+    T FindMinIter()
+    {
+        return FindMinIterPrivate(this->root);
+    }
 
 private:
     
@@ -320,6 +330,17 @@ private:
             return findMinPrivate(node->left_node); //уходим дальше влево рекурсивно если есть возможность
         }
     }
+    T FindMinIterPrivate( Node* root_in) const 
+    {
+        Node* ptr = root_in;
+        if (ptr == nullptr) {
+            throw std::out_of_range("Can't find maximum key in empty tree");
+        }
+        while (ptr->left_node) {
+            ptr = ptr->left_node;
+        }
+        return ptr->node_data;
+    }
     Node* removePrivate(Node* node, const T& value)
     {
         if (!node) return nullptr;
@@ -387,13 +408,58 @@ private:
         }
     }
 
-    uint64_t saveAsArrPrivate(Node* node, T* arr, uint64_t index) const
+    uint64_t saveAsArrPrivate(Node* node, T* arr, uint64_t index, int walk=4) const
     {
-        if (!node) return index;
-        index = saveAsArrPrivate(node->left_node, arr, index); 
-        arr[index++] = node->node_data; // К
-        index = saveAsArrPrivate(node->right_node, arr, index);
-        return index;
+        if(walk == 1) //Root-Left-Right
+        {
+            if (!node) return index;
+            arr[index++] = node->node_data; // К
+            index = saveAsArrPrivate(node->left_node, arr, index); 
+            index = saveAsArrPrivate(node->right_node, arr, index);
+            return index;
+        }
+        if(walk == 2) //Root-Right-Left
+        {
+            if (!node) return index;
+            arr[index++] = node->node_data; // К
+            index = saveAsArrPrivate(node->right_node, arr, index); 
+            index = saveAsArrPrivate(node->left_node, arr, index);
+            return index;
+        }
+        if(walk == 3) //Left-Right-Root
+        {
+            if (!node) return index;
+            index = saveAsArrPrivate(node->left_node, arr, index);
+            index = saveAsArrPrivate(node->right_node, arr, index); 
+            arr[index++] = node->node_data; // К
+            return index;
+        }
+        if(walk == 4) //Left-Root-Right
+        {
+            if (!node) return index;
+            
+            index = saveAsArrPrivate(node->left_node, arr, index);
+            arr[index++] = node->node_data; // К
+            index = saveAsArrPrivate(node->right_node, arr, index); 
+            return index;
+        }
+        if(walk == 5) //Right-Left-Root
+        {
+            if (!node) return index;
+            index = saveAsArrPrivate(node->right_node, arr, index); 
+            index = saveAsArrPrivate(node->left_node, arr, index);
+            arr[index++] = node->node_data; // К
+            return index;
+        }
+        if(walk == 6) //Right-Left-Root
+        {
+            if (!node) return index;
+            index = saveAsArrPrivate(node->right_node, arr, index); 
+            arr[index++] = node->node_data; // К
+            index = saveAsArrPrivate(node->left_node, arr, index);
+            return index;
+        }
+
     }
     void WherePrivate(Node* currentNode, BinTree<T>& newTree, bool (*pred)(const T &))
     {
@@ -412,7 +478,8 @@ private:
     {
         if (node != nullptr)
         {
-            result.insert(func(node->node_data));
+            T value = func(node->node_data);
+            result.insert(value);
             MapRecursive(node->left_node, result, func);
             MapRecursive(node->right_node, result, func);
         }

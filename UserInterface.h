@@ -13,7 +13,7 @@
 
 void typeCreate()
 {
-    std::cout << "-------------------Выберите тип данных--------------------\n ";
+    std::cout << "-------------------Выберите тип данных--------------------\n";
     std::cout << "   1. Целые числа\n";
     std::cout << "   2. Вещественные числа\n";
     std::cout << "   3. Строки\n";
@@ -53,8 +53,6 @@ void mainLoop()
     BinTree<Student> tree1_stu; 
     TreeTest<int> test_tree;
     BinTree<int> TestS;
-    SpeedTests TestSp = SpeedTests(TestS);
-    test_tree.testAll();
     Set<int> set_of_int;
     Set<double> set_of_double;
     Set<std::string> set_of_string; 
@@ -131,14 +129,12 @@ void mainLoop()
         case 2:
             test_tree.testAll();
             break; 
-        case 3:
-            TestSp.GetTime(); 
+        case 3: 
+            TestSpeed();
             std::cout << "That's all, folks!";
             break;
-        case 4:
-
         default:
-            break;
+            return;
         }
     }
 }
